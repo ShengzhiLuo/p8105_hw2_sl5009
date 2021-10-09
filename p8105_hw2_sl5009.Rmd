@@ -50,7 +50,7 @@ drop.na=(Mr_Trash_Wheel_2019)
 
 ## Problem 2
 ```{r}
-pols=
+pols_month=
   read.csv("./fivethirtyeight_datasets/pols-month.csv")%>%
   separate(mon,into=c("year","month","day"))%>%
   mutate(
@@ -74,7 +74,22 @@ snp=
   mutate(
     year=as.numeric(year),
     year=ifelse(year>47, 1900+year, 2000+year)
+  )%>%
+  arrange(year)
+```
+
+```{r}
+unemployment=
+  read.csv("./fivethirtyeight_datasets/unemployment.csv")%>%
+  pivot_longer(
+    Jan:Dec,
+    names_to="month",
+    values_to = "unemployment rate"
   )
+```
+
+```{r}
+
 ```
 
 
