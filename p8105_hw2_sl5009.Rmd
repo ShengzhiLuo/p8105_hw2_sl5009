@@ -9,41 +9,56 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r,include=FALSE}
+```{r,message=FALSE}
 library(tidyverse)
 library(readxl)
-
+library(dplyr)
 ```
 
 ## Prolem 1
 Read and clean the Mr.Trash Wheel sheet
-```{r}
+```{r,message=FALSE}
 Mr_Trash_Wheel<-read_excel("./Trash-Wheel-Collection-Totals-7-2020-2.xlsx")
 Mr_Trash_Wheel=janitor::clean_names(Mr_Trash_Wheel)
 ```
 
-```{r}
+```{r,results=FALSE}
 drop_na(Mr_Trash_Wheel,dumpster)
 ```
 
-```{r}
+```{r,results=FALSE}
 round(Mr_Trash_Wheel$sports_balls,digits = 0)
 ```
 
 Read and clean precipitation data for 2018 and 2019
-```{r}
-Mr_Trash_Wheel_2018<-filter(Mr_Trash_Wheel, year==2018)
-Mr_Trash_Wheel_2018=janitor::clean_names(Mr_Trash_Wheel_2018)
-drop.na=(Mr_Trash_Wheel_2018)
-mutate(Mr_Trash_Wheel_2018, year=str_to_upper(year))
+```{r,message=FALSE}
+Pre_2018=
+  read_excel("./Trash-Wheel-Collection-Totals-7-2020-2.xlsx",sheet="2018 Precipitation")%>%
+  janitor::clean_names()%>%
+  drop_na()%>%
+  mutate(
+    year=2018
+    )
+Pre_2018=Pre_2018[-1,]
+```
+
+```{r,message=FALSE}
+Pre_2019=
+  read_excel("./Trash-Wheel-Collection-Totals-7-2020-2.xlsx",sheet="2019 Precipitation")%>%
+  janitor::clean_names()%>%
+  drop_na()%>%
+  mutate(year=2019)
+Pre_2019=Pre_2019[-1,]
 ```
 
 ```{r}
-Mr_Trash_Wheel_2019<-filter(Mr_Trash_Wheel, year==2019)
-Mr_Trash_Wheel_2019=janitor::clean_names(Mr_Trash_Wheel_2019)
-drop.na=(Mr_Trash_Wheel_2019)
+Pre_2018_2019=
+  bind_rows(Pre_2018,Pre_2019) %>%
+  mutate(
+    precipitation_in=month.name[as.numeric(precipitation_in)]
+  )
+Pre_2018_2019
 ```
-
 
 
 
@@ -55,8 +70,8 @@ pols_month=
   separate(mon,into=c("year","month","day"))%>%
   mutate(
     president=prez_gop+prez_dem,
-    month = month.abb[as.numeric(month)]
-    )%>%
+    month = month.abb[as.numeric(month)],
+    year=as.numeric(year))%>%
   select(-c("prez_gop","prez_dem","day"))
 ```
 
@@ -65,7 +80,8 @@ pols_month=
 ```{r}
 snp=
   read.csv("./fivethirtyeight_datasets/snp.csv")%>%
-  separate(date,into=c("day","month","year"))%>%
+  separate(date,into=c("month","day","year"))%>%
+  arrange(as.numeric(month))%>%
   mutate(
     month = month.abb[as.numeric(month)]
     )%>%
@@ -86,10 +102,21 @@ unemployment=
     names_to="month",
     values_to = "unemployment rate"
   )
+colnames(unemployment) <- c("year","month","unemployment rate")
 ```
 
 ```{r}
+fas_data=
+  left_join(pols_month,snp,by=c("year","month"))
+res_data=
+  left_join(fas_data,unemployment,by=c("year","month"))
+res_data
+```
+## Problem 3
 
+```{r}
+Popular_Baby_Names<-read.csv("./Popular_Baby_Names.csv")
+ 
 ```
 
 
