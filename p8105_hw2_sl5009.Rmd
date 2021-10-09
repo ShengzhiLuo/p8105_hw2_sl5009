@@ -11,9 +11,70 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r,include=FALSE}
 library(tidyverse)
+library(readxl)
+
+```
+
+## Prolem 1
+Read and clean the Mr.Trash Wheel sheet
+```{r}
+Mr_Trash_Wheel<-read_excel("./Trash-Wheel-Collection-Totals-7-2020-2.xlsx")
+Mr_Trash_Wheel=janitor::clean_names(Mr_Trash_Wheel)
 ```
 
 ```{r}
-
+drop_na(Mr_Trash_Wheel,dumpster)
 ```
+
+```{r}
+round(Mr_Trash_Wheel$sports_balls,digits = 0)
+```
+
+Read and clean precipitation data for 2018 and 2019
+```{r}
+Mr_Trash_Wheel_2018<-filter(Mr_Trash_Wheel, year==2018)
+Mr_Trash_Wheel_2018=janitor::clean_names(Mr_Trash_Wheel_2018)
+drop.na=(Mr_Trash_Wheel_2018)
+mutate(Mr_Trash_Wheel_2018, year=str_to_upper(year))
+```
+
+```{r}
+Mr_Trash_Wheel_2019<-filter(Mr_Trash_Wheel, year==2019)
+Mr_Trash_Wheel_2019=janitor::clean_names(Mr_Trash_Wheel_2019)
+drop.na=(Mr_Trash_Wheel_2019)
+```
+
+
+
+
+
+## Problem 2
+```{r}
+pols=
+  read.csv("./fivethirtyeight_datasets/pols-month.csv")%>%
+  separate(mon,into=c("year","month","day"))%>%
+  mutate(
+    president=prez_gop+prez_dem,
+    month = month.abb[as.numeric(month)]
+    )%>%
+  select(-c("prez_gop","prez_dem","day"))
+```
+
+
+
+```{r}
+snp=
+  read.csv("./fivethirtyeight_datasets/snp.csv")%>%
+  separate(date,into=c("day","month","year"))%>%
+  mutate(
+    month = month.abb[as.numeric(month)]
+    )%>%
+  select(-c("day"))%>%
+  relocate(year,month,close)%>%
+  mutate(
+    year=as.numeric(year),
+    year=ifelse(year>47, 1900+year, 2000+year)
+  )
+```
+
 
