@@ -13,24 +13,27 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readxl)
 library(dplyr)
+library(ggridges)
 ```
 
 ## Prolem 1
-Read and clean the Mr.Trash Wheel sheet
+Read and clean the Mr.Trash Wheel sheet.
 ```{r,message=FALSE}
 Mr_Trash_Wheel<-read_excel("./Trash-Wheel-Collection-Totals-7-2020-2.xlsx")
 Mr_Trash_Wheel=janitor::clean_names(Mr_Trash_Wheel)
 ```
 
+Omit rows that do not include dumpster-specific data.
 ```{r,results=FALSE}
 drop_na(Mr_Trash_Wheel,dumpster)
 ```
 
+Round the number of sports balls to the nearest integer.
 ```{r,results=FALSE}
 round(Mr_Trash_Wheel$sports_balls,digits = 0)
 ```
 
-Read and clean precipitation data for 2018 and 2019
+Read and clean precipitation data for 2018 and 2019.
 ```{r,message=FALSE}
 Pre_2018=
   read_excel("./Trash-Wheel-Collection-Totals-7-2020-2.xlsx",sheet="2018 Precipitation")%>%
@@ -42,6 +45,7 @@ Pre_2018=
 Pre_2018=Pre_2018[-1,]
 ```
 
+
 ```{r,message=FALSE}
 Pre_2019=
   read_excel("./Trash-Wheel-Collection-Totals-7-2020-2.xlsx",sheet="2019 Precipitation")%>%
@@ -51,6 +55,7 @@ Pre_2019=
 Pre_2019=Pre_2019[-1,]
 ```
 
+Combine precipitation datasets and convert month to a character variable. 
 ```{r}
 Pre_2018_2019=
   bind_rows(Pre_2018,Pre_2019) %>%
@@ -60,10 +65,12 @@ Pre_2018_2019=
 Pre_2018_2019
 ```
 
-
+### uygfuu
 
 
 ## Problem 2
+
+Clean the data in pols-month.csv.
 ```{r}
 pols_month=
   read.csv("./fivethirtyeight_datasets/pols-month.csv")%>%
@@ -76,7 +83,7 @@ pols_month=
 ```
 
 
-
+Clean the data in snp.csv.
 ```{r}
 snp=
   read.csv("./fivethirtyeight_datasets/snp.csv")%>%
@@ -94,6 +101,7 @@ snp=
   arrange(year)
 ```
 
+Tidy the unemployment data so that it can be merged with the previous datasets.
 ```{r}
 unemployment=
   read.csv("./fivethirtyeight_datasets/unemployment.csv")%>%
@@ -105,18 +113,58 @@ unemployment=
 colnames(unemployment) <- c("year","month","unemployment rate")
 ```
 
+Join the datasets by merging snp into pols, and merging unemployment into the result.
 ```{r}
 fas_data=
   left_join(pols_month,snp,by=c("year","month"))
 res_data=
   left_join(fas_data,unemployment,by=c("year","month"))
-res_data
 ```
 ## Problem 3
-
+Load and tidy the data.
 ```{r}
-Popular_Baby_Names<-read.csv("./Popular_Baby_Names.csv")
- 
+Popular_Baby_Names=
+  read.csv("./Popular_Baby_Names.csv")%>%
+  janitor::clean_names() %>%
+  mutate(child_s_first_name=stringr::str_to_title(child_s_first_name))%>%
+  mutate(ethnicity=replace(ethnicity,ethnicity=="ASIAN AND PACI","ASIAN AND PACIFIC ISLANDER"),
+         ethnicity=replace(ethnicity,ethnicity=="BLACK NON HISP","BLACK NON HISPANIC"),
+         ethnicity=replace(ethnicity,ethnicity=="WHITE NON HISP","WHITE NON HISPANIC")
+         )
+Popular_Baby_Names=distinct(Popular_Baby_Names)
 ```
+
+Produce a well-structured, reader-friendly table showing the rank in popularity of the name “Olivia” as a female baby name over time.
+```{r}
+Olivia_rank=
+  filter(Popular_Baby_Names, child_s_first_name=="Olivia")%>%
+  pivot_wider(
+  names_from = "year_of_birth", 
+  values_from = c(count,rank)
+  )%>%
+  relocate(child_s_first_name,ethnicity)
+```
+
+Produce a table showing the most popular name among male children over time.
+```{r}
+male_rank=
+  filter(Popular_Baby_Names, gender=="MALE")%>%
+  filter(rank==1)%>%
+  pivot_wider(
+  names_from = "year_of_birth", 
+  values_from = c(count,rank)
+  )
+```
+
+Produce a scatter plot showing the number of children with a name (y axis) against the rank in popularity of that name (x axis).
+```{r}
+male_white_2016=
+  filter(Popular_Baby_Names,gender=="MALE",ethnicity=="WHITE NON HISPANIC",year_of_birth=="2016")
+male_white_2016%>%
+  ggplot(aes(x=rank,y=count))+
+  geom_point()
+```
+
+
 
 
