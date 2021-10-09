@@ -25,12 +25,12 @@ Mr_Trash_Wheel=janitor::clean_names(Mr_Trash_Wheel)
 
 Omit rows that do not include dumpster-specific data.
 ```{r,results=FALSE}
-drop_na(Mr_Trash_Wheel,dumpster)
+Mr_Trash_Wheel=drop_na(Mr_Trash_Wheel,dumpster)
 ```
 
 Round the number of sports balls to the nearest integer.
 ```{r,results=FALSE}
-round(Mr_Trash_Wheel$sports_balls,digits = 0)
+Mr_Trash_Wheel$sports_balls=round(Mr_Trash_Wheel$sports_balls,digits = 0)
 ```
 
 Read and clean precipitation data for 2018 and 2019.
@@ -65,8 +65,16 @@ Pre_2018_2019=
 Pre_2018_2019
 ```
 
-### uygfuu
+```{r}
+Pre_2018_sum=sum(as.numeric(Pre_2018$x2))
+```
 
+```{r}
+Mr_Trash_Wheel_2019=filter(Mr_Trash_Wheel,year=="2019")
+Mr_Trash_Wheel_median=median(Mr_Trash_Wheel_2019$sports_balls)
+```
+
+The precipitation data on May, July and September of 2018 are very rainy than the rest of the time of 2018 while data on 2019 are relatively low comparing to 2018 throughout the whole year of 2019. The total precipitation in 2018 is `r Pre_2018_sum` and the median number of sports balls in a dumpster in 2019 is `r Mr_Trash_Wheel_median`.
 
 ## Problem 2
 
@@ -120,6 +128,9 @@ fas_data=
 res_data=
   left_join(fas_data,unemployment,by=c("year","month"))
 ```
+
+Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
+
 ## Problem 3
 Load and tidy the data.
 ```{r}
